@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>☀️TO🌙GETHER</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Bebas+Neue&display=swap');
+
+/* ━━━ BASE ━━━ */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#0f0f13;color:#f0ede8;font-family:‘Noto Sans JP’,‘Hiragino Sans’,sans-serif;overflow-x:hidden}
+button{font-family:inherit;cursor:pointer;border:none}
+input,textarea,select{font-family:inherit;color:#f0ede8;outline:none}
+input:focus,textarea:focus,select:focus{border-color:#c9a84c!important}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:#3a3a48;border-radius:2px}
+
+/* ━━━ HEADER ━━━ */
+.header{background:#16161e;border-bottom:1px solid #222230;padding:12px 14px 0;position:sticky;top:0;z-index:50}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.logo{font-family:‘Bebas Neue’;font-size:20px;letter-spacing:3px}
+.logo-sub{font-size:10px;color:#444;letter-spacing:1px;margin-top:1px}
+.tabs{display:flex;gap:2px;background:#111118;border-radius:10px;padding:3px}
+.tab-btn{flex:1;padding:7px 4px;border-radius:8px;background:transparent;font-size:15px;transition:all .2s}
+.tab-btn.active{background:#2a2a38}
+.free-btn{background:linear-gradient(135deg,#1a3a28,#22442e);border:1px solid #4ade8066;border-radius:10px;color:#4ade80;padding:8px 11px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px}
+.icon-btn{background:#1e1e28;border:1px solid #2a2a38;border-radius:10px;color:#666;padding:8px 10px;font-size:11px}
+.pair-code-box{background:#111118;border:1px solid #c9a84c22;border-radius:8px;padding:8px 12px;margin-bottom:10px}
+.pair-code-label{font-size:10px;color:#555;margin-bottom:3px}
+.pair-code-val{font-size:11px;color:#c9a84c;font-family:monospace;word-break:break-all}
+
+/* ━━━ TAB CONTENT ━━━ */
+.tab-content{display:none;padding:14px}.tab-content.active{display:block}
+
+/* ━━━ FILTER ━━━ */
+.filter-row{display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap}
+.filter-btn{padding:5px 10px;border-radius:20px;font-size:12px;background:#1e1e28;color:#555;font-weight:400;transition:all .2s}
+.filter-btn.active{color:#111;font-weight:700}
+
+/* ━━━ MONTH NAV ━━━ */
+.month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.month-nav-btn{background:#1e1e28;color:#888;border-radius:8px;padding:7px 13px;font-size:16px}
+.month-nav-btn:hover{background:#2a2a35}
+.month-label{font-family:‘Bebas Neue’;font-size:24px;letter-spacing:2px}
+.month-label span{font-size:30px;color:#c9a84c;margin-left:6px}
+
+/* ━━━ CALENDAR ━━━ */
+.day-headers{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;margin-bottom:3px}
+.day-header{text-align:center;font-size:10px;color:#555;padding:3px 0}
+.day-header.sun{color:#e87878}.day-header.sat{color:#7eb8c9}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px}
+.cal-day{min-height:64px;background:#16161e;border-radius:6px;padding:3px 2px;position:relative;border:1px solid #222230;cursor:pointer;overflow:hidden;transition:background .15s}
+.cal-day:hover{background:#1e1e28}
+.cal-day.today{background:#1a1a2e;border-color:#c9a84c44}
+.cal-day.has-ov{border-color:#4ade8055}
+.cal-day.has-anniv{border-color:#ff8c6655}
+.day-num{font-size:11px;text-align:right;margin-bottom:2px;line-height:1}
+.day-num.today{color:#c9a84c;font-weight:700}
+.day-num.sun{color:#e87878}.day-num.sat{color:#7eb8c9}.day-num.anniv{color:#ff8c66}
+.ov-dot{position:absolute;top:2px;right:2px;width:4px;height:4px;border-radius:50%;background:#4ade80;animation:pulse 2s infinite}
+.badge-icons{position:absolute;top:2px;left:2px;font-size:7px;line-height:1}
+.ev-chips{display:flex;flex-direction:column;gap:1px;overflow:hidden}
+.ev-chip{border-radius:2px;padding:1px 2px;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;line-height:1.3;min-width:0}
+.ev-chip:hover{opacity:.8}
+.free-chip-row{display:flex;gap:1px}
+.free-chip{flex:1;background:#1a3a2a;border:1px solid #4ade8033;border-radius:2px;padding:1px;font-size:7px;color:#4ade80;text-align:center;cursor:pointer;min-width:0}
+.more-label{font-size:7px;color:#444;text-align:center}
+
+/* ━━━ LEGEND ━━━ */
+.legend{display:flex;gap:10px;justify-content:center;margin-top:12px;margin-bottom:18px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:3px;font-size:10px}
+
+/* ━━━ SECTION ━━━ */
+.section-label{font-family:‘Bebas Neue’;font-size:11px;letter-spacing:2px;color:#444;margin-bottom:8px}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+
+/* ━━━ ROW CARDS ━━━ */
+.ev-row{background:#16161e;border-radius:10px;padding:10px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:background .15s}
+.ev-row:hover{background:#1e1e2a}
+.ev-row-title{font-size:13px;font-weight:500;margin-bottom:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.ev-row-sub{font-size:10px;color:#555}
+.ev-arrow{color:#2a2a38;font-size:14px;flex-shrink:0}
+.promise-badge{font-size:9px;background:#2a1e3a;border:1px solid #b07ec9;color:#b07ec9;border-radius:5px;padding:1px 5px;cursor:pointer;white-space:nowrap}
+
+/* ━━━ FREE TAB ━━━ */
+.green-btn{background:#1a3a2a;border:1px solid #4ade8044;border-radius:8px;color:#4ade80;padding:6px 12px;font-size:12px;font-weight:700}
+.owner-section{margin-bottom:20px}
+.owner-label{font-size:12px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.free-row{background:#16161e;border-left:3px solid #4ade80;border:1px solid #1e3a2a;border-radius:8px;padding:9px 12px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:background .15s}
+.free-row:hover{background:#1e2a1e}
+.free-row-date{font-size:12px;font-weight:700;color:#4ade80;margin-bottom:1px}
+.free-row-time{font-size:11px;color:#555}
+
+/* ━━━ PROMISE TAB ━━━ */
+.score-card{background:linear-gradient(135deg,#1e1228,#2a1e3a);border:1px solid #b07ec944;border-radius:14px;padding:18px;margin-bottom:18px;text-align:center}
+.score-label{font-size:10px;letter-spacing:2px;color:#888;font-family:‘Bebas Neue’;margin-bottom:6px}
+.score-num{font-family:‘Bebas Neue’;font-size:48px;letter-spacing:4px;color:#b07ec9;line-height:1}
+.score-total{font-size:26px;color:#555}
+.score-pct{font-size:12px;margin-top:8px}
+.promise-row{background:#16161e;border-radius:10px;padding:11px 13px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.promise-title{font-size:13px;font-weight:500;margin-bottom:2px}
+.promise-sub{font-size:10px;color:#555}
+.promise-broke-label{font-size:10px;color:#ff7788;margin-top:3px}
+.check-btn{background:#2a1e3a;border:1px solid #b07ec9;color:#b07ec9;border-radius:7px;padding:5px 9px;font-size:10px;font-weight:600;white-space:nowrap}
+.reset-btn{background:transparent;color:#444;font-size:9px;margin-top:3px;display:block}
+.penalty-section{margin-top:20px}
+.penalty-label{font-family:‘Bebas Neue’;font-size:11px;letter-spacing:2px;color:#ff7788;margin-bottom:8px}
+.penalty-row{border-radius:10px;padding:11px 13px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;transition:opacity .2s}
+.penalty-who{font-size:11px;color:#ff7788;font-weight:600;margin-bottom:2px}
+.penalty-text{font-size:13px}
+.penalty-ev{font-size:9px;color:#444;margin-top:2px}
+.penalty-done-btn{border-radius:7px;padding:5px 9px;font-size:10px;white-space:nowrap;flex-shrink:0}
+
+/* ━━━ ANNIV TAB ━━━ */
+.anniv-upcoming{background:linear-gradient(135deg,#1e1410,#1a1218);border:1px solid #ff8c6633;border-left:3px solid #ff8c66;border-radius:10px;padding:13px 15px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.anniv-upcoming:hover{background:#1e1a14}
+.anniv-title{font-size:13px;font-weight:600;color:#ff8c66;margin-bottom:3px}
+.anniv-date-sub{font-size:10px;color:#666}
+.anniv-emoji{font-size:20px;animation:sparkle 1.5s infinite}
+.anniv-diff{font-size:10px;color:#ff8c66;margin-top:2px;text-align:right}
+.anniv-row{background:#16161e;border:1px solid #ff8c6622;border-left:3px solid #ff8c66;border-radius:10px;padding:10px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:background .15s}
+.anniv-row:hover{background:#1e1a16}
+.orange-btn{background:linear-gradient(135deg,#3a1a10,#ff8c66);color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700}
+
+/* ━━━ PHOTOS TAB ━━━ */
+.upload-area{display:flex;flex-direction:column;align-items:center;gap:7px;background:#16161e;border:1px dashed #3a3a4a;border-radius:12px;padding:22px;margin-bottom:18px;cursor:pointer}
+.photo-group{margin-bottom:22px}
+.photo-group-header{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.photo-group-date{font-size:12px;font-weight:700;color:#c9a84c}
+.photo-group-count{font-size:10px;color:#333}
+.photo-add-btn{margin-left:auto;background:#1e1e28;border:1px solid #2a2a38;border-radius:7px;padding:3px 9px;font-size:10px;color:#666;cursor:pointer}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.photo-thumb{aspect-ratio:1;border-radius:7px;overflow:hidden;background:#1a1a22;cursor:pointer}
+.photo-thumb:hover{opacity:.85}
+.photo-thumb img{width:100%;height:100%;object-fit:cover}
+
+/* ━━━ MODALS ━━━ */
+.overlay{position:fixed;inset:0;background:#000000cc;z-index:100;display:none;align-items:flex-end;justify-content:center}
+.overlay.center{align-items:center;padding:16px}
+.overlay.open{display:flex;animation:fadeIn .15s ease}
+.modal{background:#1a1a24;border-radius:18px 18px 0 0;padding:20px 16px 40px;width:100%;max-width:480px;border-top:1px solid #2a2a38;animation:slideUp .2s ease}
+.modal.center-modal{border-radius:18px;border-top:none;max-height:90vh;overflow-y:auto}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.modal-title{font-family:‘Bebas Neue’;font-size:16px;letter-spacing:2px}
+.modal-date{font-size:10px;color:#444}
+.form-col{display:flex;flex-direction:column;gap:11px}
+.fi{background:#111118;border:1px solid #2a2a38;border-radius:9px;padding:10px 13px;font-size:14px;width:100%;transition:border .2s}
+.fi-sm{background:#111118;border:1px solid #2a2a38;border-radius:9px;padding:10px 10px;font-size:13px;transition:border .2s}
+.fi-ta{background:#111118;border:1px solid #2a2a38;border-radius:9px;padding:10px 13px;font-size:13px;width:100%;resize:none;transition:border .2s}
+.time-row{display:flex;gap:6px;align-items:center}
+.time-sep{color:#333;flex-shrink:0}
+.toggle-row{display:flex;gap:5px}
+.toggle-btn{flex:1;padding:8px;border-radius:9px;border:1px solid #2a2a38;background:transparent;color:#444;font-size:12px;font-weight:600;transition:all .2s}
+.owner-row{display:flex;gap:6px}
+.owner-btn{flex:1;padding:8px 4px;border-radius:9px;border:2px solid #2a2a38;background:transparent;color:#444;font-size:11px;font-weight:600;transition:all .2s}
+.action-row{display:flex;gap:8px;margin-top:4px}
+.del-btn{flex:1;padding:11px;border-radius:11px;border:1px solid #ff4455;background:transparent;color:#ff4455;font-size:13px;font-weight:600;transition:all .2s}
+.del-btn:hover{background:#ff4455;color:#fff}
+.save-btn{flex:2;padding:12px;border-radius:11px;font-size:14px;font-weight:700;transition:opacity .2s}
+.save-btn:hover{opacity:.9}
+.save-gold{background:linear-gradient(135deg,#c9a84c,#e8c870);color:#111}
+.save-green{background:linear-gradient(135deg,#1e6a3a,#4ade80);color:#0a2016}
+.save-orange{background:linear-gradient(135deg,#8c3a10,#ff8c66);color:#fff}
+.save-red{background:linear-gradient(135deg,#5a1a22,#ff4455);color:#fff}
+.cancel-btn{width:100%;margin-top:10px;padding:10px;border-radius:11px;background:#1e1e28;color:#555;font-size:12px}
+.repeat-row{display:flex;gap:6px}
+.repeat-btn{flex:1;padding:9px;border-radius:9px;border:1px solid #2a2a38;background:transparent;color:#444;font-size:11px;font-weight:600;transition:all .2s}
+
+/* ━━━ AUTH ━━━ */
+.auth-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.auth-logo{font-family:‘Bebas Neue’;font-size:28px;letter-spacing:4px;margin-bottom:4px;text-align:center}
+.auth-sub{font-size:12px;color:#444;margin-bottom:28px;letter-spacing:1px;text-align:center}
+.auth-form{width:100%;max-width:340px}
+.auth-input{background:#111118;border:1px solid #2a2a38;border-radius:10px;color:#f0ede8;padding:13px 14px;font-size:15px;width:100%;display:block;margin-bottom:9px;transition:border .2s}
+.auth-btn{width:100%;padding:13px;border-radius:11px;font-size:15px;font-weight:700;margin-bottom:8px}
+.auth-gold{background:linear-gradient(135deg,#c9a84c,#e8c870);color:#111}
+.auth-blue{background:linear-gradient(135deg,#1e6090,#7eb8c9);color:#111}
+.auth-link{text-align:center;margin-top:14px}
+.auth-link button{background:none;color:#555;font-size:12px}
+.auth-divider{text-align:center;color:#444;font-size:12px;margin:12px 0}
+.auth-error{color:#ff7788;font-size:11px;margin-bottom:7px}
+.pair-code-display{background:#1a1a24;border:1px solid #c9a84c33;border-radius:12px;padding:14px 20px;margin-bottom:14px;text-align:center}
+.pair-code-display p{font-size:11px;color:#555;margin-bottom:5px}
+.pair-code-display code{font-size:12px;color:#f0ede8;word-break:break-all}
+
+/* ━━━ LIGHTBOX ━━━ */
+.lightbox{position:fixed;inset:0;background:#000000ee;z-index:300;display:none;flex-direction:column;align-items:center;justify-content:center;padding:16px}
+.lightbox.open{display:flex}
+.lightbox img{width:100%;border-radius:10px;object-fit:contain;max-height:68vh}
+.lb-info{text-align:center;margin-top:10px;font-size:12px;color:#666}
+.lb-nav{display:flex;gap:10px;justify-content:center;margin-top:10px}
+.lb-nav button{background:#2a2a38;color:#f0ede8;border-radius:9px;padding:9px 18px;font-size:16px}
+.lb-del{display:block;margin:10px auto 0;background:transparent;border:1px solid #ff445566;color:#ff7788;border-radius:9px;padding:7px 18px;font-size:11px}
+
+/* ━━━ TOAST ━━━ */
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#2a2a38;border:1px solid #3a3a4a;color:#f0ede8;padding:10px 18px;border-radius:28px;font-size:12px;z-index:400;white-space:nowrap;box-shadow:0 4px 20px #00000066;display:none}
+.toast.show{display:block;animation:toastIn .3s ease}
+
+/* ━━━ LOADING ━━━ */
+.loading{min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:‘Bebas Neue’;font-size:16px;letter-spacing:3px;color:#444}
+
+/* ━━━ ANIMATIONS ━━━ */
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes toastIn{from{transform:translateY(14px) translateX(-50%);opacity:0}to{transform:translateY(0) translateX(-50%);opacity:1}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 #4ade8055}50%{box-shadow:0 0 0 6px #4ade8000}}
+@keyframes sparkle{0%,100%{opacity:1}50%{opacity:.5}}
+</style>
+
+</head>
+<body>
+
+<div id="app">
+  <div id="loading" class="loading">LOADING...</div>
+
+  <!-- AUTH -->
+
+  <div id="auth" class="auth-wrap" style="display:none">
+    <div class="auth-logo">
+      <span style="color:#c9a84c">☀️</span>
+      <span style="color:#f0ede8;margin:0 3px">TO</span>
+      <span style="color:#7eb8c9">🌙</span>
+      <span style="color:#f0ede8;margin-left:3px">GETHER</span>
+    </div>
+    <div class="auth-sub">ふたりのカレンダー</div>
+    <div class="auth-form">
+      <!-- Login -->
+      <div id="v-login">
+        <input class="auth-input" id="l-email" type="email" placeholder="メールアドレス">
+        <input class="auth-input" id="l-pass" type="password" placeholder="パスワード">
+        <div class="auth-error" id="l-err" style="display:none"></div>
+        <button class="auth-btn auth-gold" onclick="doLogin()">ログイン</button>
+        <div class="auth-link"><button onclick="showV('v-signup')">アカウントを作成する →</button></div>
+      </div>
+      <!-- Signup -->
+      <div id="v-signup" style="display:none">
+        <input class="auth-input" id="s-name" placeholder="名前（表示名）">
+        <input class="auth-input" id="s-email" type="email" placeholder="メールアドレス">
+        <input class="auth-input" id="s-pass" type="password" placeholder="パスワード（6文字以上）">
+        <div class="auth-error" id="s-err" style="display:none"></div>
+        <button class="auth-btn auth-gold" onclick="doSignup()">アカウント作成</button>
+        <div class="auth-link"><button onclick="showV('v-login')">← ログインに戻る</button></div>
+      </div>
+      <!-- Pair setup -->
+      <div id="v-pair" style="display:none">
+        <div style="font-size:13px;color:#888;text-align:center;margin-bottom:18px">ペアの設定をしてください</div>
+        <button class="auth-btn auth-gold" onclick="createPair()">🦍 新しいペアを作る</button>
+        <div class="auth-divider">または</div>
+        <input class="auth-input" id="join-code" placeholder="パートナーのペアコードを入力">
+        <div class="auth-error" id="p-err" style="display:none"></div>
+        <button class="auth-btn auth-blue" onclick="joinPair()">🐱 ペアに参加する</button>
+      </div>
+      <!-- Pair code display -->
+      <div id="v-paircode" style="display:none">
+        <div style="font-size:28px;text-align:center;margin-bottom:10px">🦍</div>
+        <div class="pair-code-display">
+          <p>このコードをパートナーに送ってください</p>
+          <code id="my-pair-id"></code>
+        </div>
+        <button class="auth-btn auth-gold" onclick="startApp()">アプリを開く →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+
+  <div id="main" style="display:none">
+    <div class="header">
+      <div class="header-top">
+        <div>
+          <div class="logo">
+            <span style="color:#c9a84c">☀️</span>
+            <span style="color:#f0ede8;margin:0 3px">TO</span>
+            <span style="color:#7eb8c9">🌙</span>
+            <span style="color:#f0ede8;margin-left:3px">GETHER</span>
+          </div>
+          <div class="logo-sub" id="user-label"></div>
+        </div>
+        <div style="display:flex;gap:7px;align-items:center">
+          <button class="free-btn" onclick="checkFree()"><span>✦</span>空き確認</button>
+          <button class="icon-btn" onclick="togglePairCode()">🔗</button>
+        </div>
+      </div>
+      <div id="pair-code-banner" style="display:none" class="pair-code-box">
+        <div class="pair-code-label">ペアコード（パートナーに送る）</div>
+        <div class="pair-code-val" id="pair-code-val"></div>
+      </div>
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('cal',this)" title="カレンダー">📅</button>
+        <button class="tab-btn" onclick="switchTab('free',this)" title="空き時間">🟢</button>
+        <button class="tab-btn" onclick="switchTab('promise',this)" title="約束">🤝</button>
+        <button class="tab-btn" onclick="switchTab('anniv',this)" title="記念日">🎂</button>
+        <button class="tab-btn" onclick="switchTab('photos',this)" title="アルバム">📷</button>
+      </div>
+    </div>
+
+```
+<!-- Calendar -->
+<div id="tab-cal" class="tab-content active">
+  <div class="filter-row" id="filter-row"></div>
+  <div class="month-nav">
+    <button class="month-nav-btn" onclick="prevMonth()">‹</button>
+    <div><span class="month-label" id="cal-year"></span><span class="month-label"><span id="cal-month"></span></span></div>
+    <button class="month-nav-btn" onclick="nextMonth()">›</button>
+  </div>
+  <div class="day-headers">
+    <div class="day-header sun">日</div><div class="day-header">月</div><div class="day-header">火</div>
+    <div class="day-header">水</div><div class="day-header">木</div><div class="day-header">金</div>
+    <div class="day-header sat">土</div>
+  </div>
+  <div class="cal-grid" id="cal-grid"></div>
+  <div class="legend" id="legend"></div>
+  <div class="section-label">UPCOMING</div>
+  <div id="upcoming-list"></div>
+</div>
+
+<!-- Free -->
+<div id="tab-free" class="tab-content">
+  <div class="section-header">
+    <div class="section-label" style="margin:0">FREE TIME</div>
+    <button class="green-btn" onclick="openEv(S.today,true)">＋ 空き登録</button>
+  </div>
+  <div id="free-list"></div>
+</div>
+
+<!-- Promise -->
+<div id="tab-promise" class="tab-content">
+  <div class="score-card">
+    <div class="score-label">PROMISE SCORE</div>
+    <div class="score-num" id="score-num">0<span class="score-total">/0</span></div>
+    <div style="font-size:11px;color:#666;margin-top:4px">約束を守った回数</div>
+    <div class="score-pct" id="score-pct"></div>
+  </div>
+  <div class="section-label">🦍🐱 ふたりの約束</div>
+  <div id="promise-list"></div>
+  <div id="penalty-section" class="penalty-section" style="display:none">
+    <div class="penalty-label">💀 罰ゲームリスト</div>
+    <div id="penalty-list"></div>
+  </div>
+</div>
+
+<!-- Anniversary -->
+<div id="tab-anniv" class="tab-content">
+  <div class="section-header">
+    <div class="section-label" style="margin:0">ANNIVERSARY</div>
+    <button class="orange-btn" onclick="openNewAnniv()">＋ 記念日追加</button>
+  </div>
+  <div id="anniv-upcoming"></div>
+  <div class="section-label">ALL</div>
+  <div id="anniv-list"></div>
+</div>
+
+<!-- Photos -->
+<div id="tab-photos" class="tab-content">
+  <div class="section-label">PHOTO ALBUM</div>
+  <label class="upload-area">
+    <input type="file" accept="image/*" multiple style="display:none" onchange="addPhotos(S.today,this.files);this.value=''">
+    <div style="font-size:26px">📷</div>
+    <div style="font-size:12px;color:#555">タップして今日の写真を追加</div>
+    <div style="font-size:10px;color:#333" id="today-label"></div>
+  </label>
+  <div id="photo-list"></div>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- EVENT MODAL -->
+
+<div class="overlay" id="ev-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="ev-modal-title" style="color:#c9a84c">予定を追加</div>
+      <div class="modal-date" id="ev-modal-date"></div>
+    </div>
+    <div class="toggle-row" style="margin-bottom:12px">
+      <button class="toggle-btn" id="tog-ev" onclick="setEvFree(false)">予定</button>
+      <button class="toggle-btn" id="tog-free" onclick="setEvFree(true)">🟢 空き</button>
+    </div>
+    <div class="form-col">
+      <div id="fi-title-wrap"><input class="fi" id="ev-title" placeholder="タイトル"></div>
+      <div class="time-row">
+        <input class="fi-sm" type="time" id="ev-time" style="flex:1">
+        <span class="time-sep">〜</span>
+        <input class="fi-sm" type="time" id="ev-time-end" style="flex:1">
+      </div>
+      <div class="owner-row" id="ev-owner-row"></div>
+      <div id="fi-reminder-wrap">
+        <select class="fi" id="ev-reminder">
+          <option value="0">リマインダー：なし</option>
+          <option value="15">15分前</option>
+          <option value="30" selected>30分前</option>
+          <option value="60">1時間前</option>
+          <option value="120">2時間前</option>
+          <option value="1440">1日前</option>
+        </select>
+      </div>
+      <div id="fi-loc-wrap"><input class="fi" id="ev-loc" placeholder="📍 場所（任意）"></div>
+      <div id="fi-note-wrap"><textarea class="fi-ta" id="ev-note" rows="2" placeholder="メモ（任意）"></textarea></div>
+      <div class="action-row">
+        <button class="del-btn" id="ev-del" onclick="deleteEv()" style="display:none">削除</button>
+        <button class="save-btn save-gold" id="ev-save" onclick="saveEv()">追加する</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROMISE MODAL -->
+
+<div class="overlay center" id="pm-modal">
+  <div class="modal center-modal" style="border:1px solid #b07ec944">
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:26px;margin-bottom:6px">🤝</div>
+      <div class="modal-title" style="color:#b07ec9;font-size:17px">約束チェック</div>
+      <div style="font-size:12px;color:#f0ede8;margin-top:5px;font-weight:500" id="pm-title"></div>
+      <div style="font-size:10px;color:#555;margin-top:2px" id="pm-sub"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button onclick="savePromise(true)" style="flex:1;padding:14px;border-radius:11px;border:1px solid #4ade8044;background:linear-gradient(135deg,#1a3a24,#22442e);color:#4ade80;font-size:14px;font-weight:700">✅ 守れた！</button>
+      <button onclick="showBrokeForm()" id="broke-btn" style="flex:1;padding:14px;border-radius:11px;border:1px solid #ff445544;background:transparent;color:#ff7788;font-size:14px;font-weight:700">❌ 守れなかった</button>
+    </div>
+    <div id="broke-form" style="display:none;flex-direction:column;gap:10px">
+      <div style="font-size:11px;color:#888">どちらが守れなかった？</div>
+      <div style="display:flex;gap:7px" id="broke-owner-row"></div>
+      <textarea id="penalty-input" class="fi-ta" rows="3" placeholder="罰ゲームの内容…（例：ご飯をおごる）" style="border-color:#ff445533"></textarea>
+      <button onclick="savePromise(false)" id="penalty-save" style="padding:12px;border-radius:11px;background:#2a2a38;color:#444;font-size:13px;font-weight:700">💀 罰ゲームを登録</button>
+    </div>
+    <button class="cancel-btn" onclick="closeModal('pm-modal')">キャンセル</button>
+  </div>
+</div>
+
+<!-- ANNIVERSARY MODAL -->
+
+<div class="overlay" id="anniv-modal">
+  <div class="modal" style="border-top-color:#ff8c6633">
+    <div class="modal-title" style="color:#ff8c66;margin-bottom:16px">🎂 <span id="anniv-modal-title">記念日を追加</span></div>
+    <div class="form-col">
+      <input class="fi" id="anniv-title" placeholder="記念日のタイトル（例：付き合った日 💑）">
+      <input class="fi" type="date" id="anniv-date">
+      <div class="repeat-row" id="anniv-repeat-row"></div>
+      <div class="action-row">
+        <button class="del-btn" id="anniv-del" onclick="deleteAnniv()" style="display:none">削除</button>
+        <button class="save-btn save-orange" onclick="saveAnniv()">追加する</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CLASH MODAL -->
+
+<div class="overlay center" id="clash-modal">
+  <div class="modal center-modal" style="border:1px solid #ff445544">
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:28px;margin-bottom:6px">⚠️</div>
+      <div class="modal-title" style="color:#ff7788;font-size:17px">予定がバッティング！</div>
+      <div style="font-size:11px;color:#555;margin-top:3px">パートナーの予定と重なっています</div>
+    </div>
+    <div id="clash-list"></div>
+    <div style="display:flex;gap:7px;margin-top:14px">
+      <button onclick="closeModal('clash-modal')" style="flex:1;padding:11px;border-radius:11px;border:1px solid #2a2a38;background:transparent;color:#888;font-size:12px">戻って修正</button>
+      <button onclick="forceAdd()" class="save-btn save-red" style="flex:1">このまま追加</button>
+    </div>
+  </div>
+</div>
+
+<!-- FREE ALERT MODAL -->
+
+<div class="overlay center" id="free-modal">
+  <div class="modal center-modal" style="border:1px solid #2a4a38">
+    <div style="text-align:center;margin-bottom:18px">
+      <div style="font-size:32px;margin-bottom:6px">💑</div>
+      <div style="font-family:'Bebas Neue';font-size:18px;letter-spacing:3px;color:#4ade80">TOGETHER TIME</div>
+      <div style="font-size:11px;color:#555;margin-top:3px">ふたりの空き時間が重なっています</div>
+    </div>
+    <div id="free-ov-list"></div>
+    <button onclick="closeModal('free-modal')" style="width:100%;margin-top:14px;padding:12px;border-radius:11px;background:#222230;color:#666;font-size:13px">閉じる</button>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+
+<div class="lightbox" id="lightbox" onclick="closeLb()">
+  <div style="width:100%;max-width:480px" onclick="event.stopPropagation()">
+    <img id="lb-img" src="" alt="">
+    <div class="lb-info" id="lb-info"></div>
+    <div class="lb-nav">
+      <button id="lb-prev" onclick="lbNav(-1)" style="display:none">‹</button>
+      <button id="lb-next" onclick="lbNav(1)" style="display:none">›</button>
+    </div>
+    <button class="lb-del" onclick="deleteLbPhoto()">この写真を削除</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ⚙️ 
+const SB_URL  = "https://webjuofpyzysirpbxoej.supabase.co";
+const SB_ANON = "sb_publishable_Ui-ZKz-HZrV1bRkxbz5OUg_ekOXJDFh";
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+const sb = supabase.createClient(SB_URL, SB_ANON);
+
+// ── USERS（ロールに応じて動的に設定）──
+let U = {
+  me:      { label:"わたし",     icon:"🦍", color:"#c9a84c", bg:"#c9a84c22" },
+  partner: { label:"パートナー", icon:"🐱", color:"#7eb8c9", bg:"#7eb8c922" },
+  both:    { label:"ふたり",     icon:"🦍🐱", color:"#b07ec9", bg:"#b07ec922" },
+};
+
+function buildU(role) {
+  if (role === "me") {
+    U.me      = { label:"わたし",     icon:"🦍", color:"#c9a84c", bg:"#c9a84c22" };
+    U.partner = { label:"パートナー", icon:"🐱", color:"#7eb8c9", bg:"#7eb8c922" };
+  } else {
+    U.me      = { label:"わたし",     icon:"🐱", color:"#7eb8c9", bg:"#7eb8c922" };
+    U.partner = { label:"パートナー", icon:"🦍", color:"#c9a84c", bg:"#c9a84c22" };
+  }
+  U.both = { label:"ふたり", icon:"🦍🐱", color:"#b07ec9", bg:"#b07ec922" };
+}
+
+const DAYS   = ["日","月","火","水","木","金","土"];
+const MONTHS = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
+const now    = new Date();
+
+// ── STATE ──
+const S = {
+  user:null, profile:null, pairId:null, myRole:null,
+  events:[], penalties:[], anniversaries:[], photos:[],
+  year:now.getFullYear(), month:now.getMonth(),
+  filter:"all", today:now.toISOString().slice(0,10),
+  editEvId:null, editAnnivId:null, currentDate:null,
+  pendingPayload:null, isEvFree:false,
+  pmEvId:null, brokeBy:null,
+  lbDate:null, lbIdx:0,
+  pairCodeVisible:false,
+};
+
+// ── HELPERS ──
+function pad(n){ return String(n).padStart(2,"0"); }
+function dstr(y,m,d){ return `${y}-${pad(m+1)}-${pad(d)}`; }
+function toMin(t){ if(!t)return 0; const[h,m]=t.split(":").map(Number); return h*60+m; }
+function mStr(n){ return `${pad(Math.floor(n/60))}:${pad(n%60)}`; }
+function getDIM(y,m){ return new Date(y,m+1,0).getDate(); }
+function getFD(y,m){ return new Date(y,m,1).getDay(); }
+function san(s){ const d=document.createElement("div"); d.textContent=s||""; return d.innerHTML; }
+
+let toastTimer=null;
+function toast(msg){
+  const el=document.getElementById("toast");
+  el.textContent=msg; el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove("show"),2800);
+}
+
+function openModal(id){ document.getElementById(id).classList.add("open"); }
+function closeModal(id){ document.getElementById(id).classList.remove("open"); }
+
+function showV(id){
+  ["v-login","v-signup","v-pair","v-paircode"].forEach(v=>{
+    document.getElementById(v).style.display=v===id?"":"none";
+  });
+}
+
+function diffLabel(ds){
+  const diff=Math.round((new Date(ds)-new Date(S.today))/86400000);
+  if(diff===0)return "今日 🎉";
+  if(diff>0)return `あと${diff}日`;
+  const y=Math.floor(Math.abs(diff)/365), mo=Math.floor((Math.abs(diff)%365)/30);
+  return y>0?`${y}年${mo?mo+"ヶ月":""}`:`${Math.abs(diff)}日目`;
+}
+
+// ── AUTH ──
+async function doLogin(){
+  const email=document.getElementById("l-email").value;
+  const pass=document.getElementById("l-pass").value;
+  const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
+  if(error){ showErr("l-err",error.message); return; }
+  await afterAuth(data.user);
+}
+
+async function doSignup(){
+  const name=document.getElementById("s-name").value.trim();
+  const email=document.getElementById("s-email").value;
+  const pass=document.getElementById("s-pass").value;
+  if(!name){ showErr("s-err","名前を入力してください"); return; }
+  const {data,error}=await sb.auth.signUp({email,password:pass});
+  if(error){ showErr("s-err",error.message); return; }
+  await sb.from("profiles").insert({id:data.user.id, display_name:name});
+  S.user=data.user;
+  showV("v-pair");
+}
+
+function showErr(id,msg){
+  const el=document.getElementById(id);
+  el.textContent=msg; el.style.display="";
+}
+
+async function afterAuth(user){
+  S.user=user;
+  document.getElementById("loading").style.display="none";
+  document.getElementById("auth").style.display="flex";
+  const {data:prof}=await sb.from("profiles").select("*").eq("id",user.id).maybeSingle();
+  S.profile=prof;
+  if(!prof||!prof.pair_id){ showV("v-pair"); return; }
+  S.pairId=prof.pair_id; S.myRole=prof.role;
+  document.getElementById("auth").style.display="none";
+  startApp();
+}
+
+async function createPair(){
+  const {data:pair}=await sb.from("pairs").insert({}).select().single();
+  await sb.from("profiles").update({pair_id:pair.id, role:"me"}).eq("id",S.user.id);
+  S.pairId=pair.id; S.myRole="me";
+  document.getElementById("my-pair-id").textContent=pair.id;
+  showV("v-paircode");
+}
+
+async function joinPair(){
+  const code=document.getElementById("join-code").value.trim();
+  const {data:pair,error}=await sb.from("pairs").select().eq("id",code).maybeSingle();
+  if(error||!pair){ showErr("p-err","コードが見つかりません"); return; }
+  await sb.from("profiles").update({pair_id:pair.id, role:"partner"}).eq("id",S.user.id);
+  S.pairId=pair.id; S.myRole="partner";
+  document.getElementById("auth").style.display="none";
+  startApp();
+}
+
+// ── START APP ──
+async function startApp(){
+  buildU(S.myRole);
+  document.getElementById("loading").style.display="flex";
+  document.getElementById("auth").style.display="none";
+  await loadAll();
+  document.getElementById("loading").style.display="none";
+  document.getElementById("main").style.display="";
+  document.getElementById("user-label").textContent=`${U.me.icon} ${S.profile?.display_name||S.user?.email||""}`;
+  document.getElementById("pair-code-val").textContent=S.pairId;
+  document.getElementById("today-label").textContent=S.today.slice(5).replace("-","/");
+  buildLegend(); buildFilter();
+  renderAll();
+  setupRT();
+}
+
+async function loadAll(){
+  const [ev,pen,anniv,ph]=await Promise.all([
+    sb.from("events").select("*").eq("pair_id",S.pairId).order("date"),
+    sb.from("penalties").select("*").eq("pair_id",S.pairId).order("created_at"),
+    sb.from("anniversaries").select("*").eq("pair_id",S.pairId).order("date"),
+    sb.from("photos").select("id,date,data_url").eq("pair_id",S.pairId).order("date"),
+  ]);
+  S.events=ev.data||[];
+  S.penalties=pen.data||[];
+  S.anniversaries=anniv.data||[];
+  S.photos=ph.data||[];
+}
+
+function setupRT(){
+  sb.channel("pair-"+S.pairId)
+    .on("postgres_changes",{event:"*",schema:"public",table:"events",filter:`pair_id=eq.${S.pairId}`},async()=>{ await loadAll(); renderAll(); })
+    .on("postgres_changes",{event:"*",schema:"public",table:"penalties",filter:`pair_id=eq.${S.pairId}`},async()=>{ await loadAll(); renderAll(); })
+    .on("postgres_changes",{event:"*",schema:"public",table:"anniversaries",filter:`pair_id=eq.${S.pairId}`},async()=>{ await loadAll(); renderAll(); })
+    .on("postgres_changes",{event:"*",schema:"public",table:"photos",filter:`pair_id=eq.${S.pairId}`},async()=>{ await loadAll(); renderAll(); })
+    .subscribe();
+}
+
+function renderAll(){
+  renderCal();
+  renderUpcoming();
+  renderFree();
+  renderPromise();
+  renderAnniv();
+  renderPhotos();
+}
+
+// ── UI HELPERS ──
+function switchTab(id,btn){
+  document.querySelectorAll(".tab-content").forEach(el=>el.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(el=>el.classList.remove("active"));
+  document.getElementById("tab-"+id).classList.add("active");
+  btn.classList.add("active");
+}
+
+function togglePairCode(){
+  S.pairCodeVisible=!S.pairCodeVisible;
+  document.getElementById("pair-code-banner").style.display=S.pairCodeVisible?"":"none";
+}
+
+function buildFilter(){
+  const row=document.getElementById("filter-row");
+  row.innerHTML=["all","me","partner","both"].map(f=>{
+    const active=S.filter===f;
+    const bg=active?(f==="all"?"#c9a84c":U[f]?.color||"#c9a84c"):"#1e1e28";
+    const col=active?"#111":"#555";
+    const fw=active?"700":"400";
+    const label=f==="all"?`🌍 全員`:`${U[f].icon} ${U[f].label}`;
+    return `<button class="filter-btn${active?" active":""}" style="background:${bg};color:${col};font-weight:${fw}" onclick="setFilter('${f}')">${label}</button>`;
+  }).join("");
+}
+
+function setFilter(f){ S.filter=f; buildFilter(); renderCal(); renderUpcoming(); }
+
+function buildLegend(){
+  const leg=document.getElementById("legend");
+  leg.innerHTML=Object.entries(U).map(([k,v])=>
+    `<div class="legend-item"><span style="font-size:12px">${v.icon}</span><span style="color:${v.color};font-size:10px">${v.label}</span></div>`
+  ).join("")+
+  `<div class="legend-item"><div style="width:7px;height:7px;border-radius:50%;background:#4ade80"></div><span style="color:#555;font-size:10px">空き重複</span></div>
+   <div class="legend-item"><span style="font-size:9px">🎂</span><span style="color:#ff8c66;font-size:10px">記念日</span></div>`;
+}
+
+// ── FREE OVERLAPS ──
+function freeOverlaps(){
+  const fM=S.events.filter(e=>e.is_free&&e.owner==="me");
+  const fP=S.events.filter(e=>e.is_free&&e.owner==="partner");
+  const map={};
+  fM.forEach(me=>fP.forEach(pt=>{
+    if(me.date!==pt.date)return;
+    const s=Math.max(toMin(me.time),toMin(pt.time));
+    const e=Math.min(toMin(me.time_end),toMin(pt.time_end));
+    if(s>=e)return;
+    if(!map[me.date])map[me.date]={date:me.date,start:mStr(s),end:mStr(e)};
+    else{ map[me.date].start=mStr(Math.min(toMin(map[me.date].start),s)); map[me.date].end=mStr(Math.max(toMin(map[me.date].end),e)); }
+  }));
+  return Object.values(map).sort((a,b)=>a.date.localeCompare(b.date));
+}
+
+function checkFree(){
+  const ovs=freeOverlaps();
+  const list=document.getElementById("free-ov-list");
+  if(!ovs.length){
+    list.innerHTML=`<div style="text-align:center;padding:18px;color:#444"><div style="font-size:26px;margin-bottom:8px">😢</div><div style="font-size:13px">重なる時間がありません</div></div>`;
+  }else{
+    list.innerHTML=ovs.map(ov=>{
+      const dur=toMin(ov.end)-toMin(ov.start);
+      const dl=dur>=60?`${Math.floor(dur/60)}時間${dur%60?dur%60+"分":""}`:dur+"分";
+      return `<div style="background:#111820;border:1px solid #4ade8033;border-left:3px solid #4ade80;border-radius:10px;padding:12px 14px;margin-bottom:7px">
+        <div style="font-size:14px;font-weight:700;color:#4ade80;margin-bottom:3px">${ov.date.slice(5).replace("-","/")}（${DAYS[new Date(ov.date).getDay()]}）</div>
+        <div style="font-size:13px">${ov.start} 〜 ${ov.end}</div>
+        <div style="font-size:10px;color:#555;margin-top:2px">約${dl}</div>
+      </div>`;
+    }).join("");
+  }
+  openModal("free-modal");
+}
+
+// ── ANNIV DATES FOR MONTH ──
+function annivDatesForMonth(){
+  const r={};
+  S.anniversaries.forEach(a=>{
+    const o=new Date(a.date);
+    if(a.repeat&&o.getMonth()===S.month){
+      const k=dstr(S.year,S.month,o.getDate());
+      if(!r[k])r[k]=[];r[k].push(a);
+    }else if(!a.repeat&&a.date.startsWith(`${S.year}-${pad(S.month+1)}`)){
+      if(!r[a.date])r[a.date]=[];r[a.date].push(a);
+    }
+  });
+  return r;
+}
+
+// ── RENDER CALENDAR ──
+function renderCal(){
+  document.getElementById("cal-year").textContent=S.year;
+  document.getElementById("cal-month").textContent=MONTHS[S.month];
+  const dim=getDIM(S.year,S.month);
+  const fd=getFD(S.year,S.month);
+  const ovDates=freeOverlaps().map(o=>o.date);
+  const annivMap=annivDatesForMonth();
+  let html="";
+  for(let i=0;i<fd;i++) html+=`<div style="min-height:64px"></div>`;
+  for(let i=0;i<dim;i++){
+    const day=i+1;
+    const ds=dstr(S.year,S.month,day);
+    const dayEvs=S.events.filter(e=>e.date===ds&&(S.filter==="all"||e.owner===S.filter));
+    const normEvs=dayEvs.filter(e=>!e.is_free);
+    const freeEvs=dayEvs.filter(e=>e.is_free);
+    const isToday=ds===S.today;
+    const isOv=ovDates.includes(ds);
+    const hasPhoto=S.photos.some(p=>p.date===ds);
+    const isAnniv=!!annivMap[ds];
+    const dow=(fd+i)%7;
+    let cls="cal-day";
+    if(isToday)cls+=" today";
+    if(isOv)cls+=" has-ov";
+    if(isAnniv)cls+=" has-anniv";
+    let numCls="day-num";
+    if(isAnniv)numCls+=" anniv";
+    else if(isToday)numCls+=" today";
+    else if(dow===0)numCls+=" sun";
+    else if(dow===6)numCls+=" sat";
+
+    // Icon for owner display
+    const ownerIcons=(ev)=>{
+      if(ev.owner==="me") return U.me.icon;
+      if(ev.owner==="partner") return U.partner.icon;
+      return U.both.icon;
+    };
+
+    const chips=normEvs.slice(0,2).map(ev=>`
+      <div class="ev-chip" style="background:${U[ev.owner]?.bg};border-left:2px solid ${U[ev.owner]?.color};color:${U[ev.owner]?.color}" onclick="event.stopPropagation();openEvEdit('${ev.id}')">
+        ${ownerIcons(ev)} ${san(ev.title)}
+      </div>`).join("");
+    const fChips=freeEvs.length?`<div class="free-chip-row">${freeEvs.slice(0,2).map(ev=>`<div class="free-chip" onclick="event.stopPropagation();openEvEdit('${ev.id}')">${U[ev.owner]?.icon||""}空</div>`).join("")}</div>`:"";
+    const more=normEvs.length>2?`<div class="more-label">+${normEvs.length-2}</div>`:"";
+    const badges=(hasPhoto?"📷":"")+(isAnniv?"🎂":"");
+
+    html+=`<div class="${cls}" onclick="openEv('${ds}',false)">
+      ${isOv?`<div class="ov-dot"></div>`:""}
+      ${badges?`<div class="badge-icons">${badges}</div>`:""}
+      <div class="${numCls}" style="padding-right:${isOv?"8px":"2px"}">${day}</div>
+      <div class="ev-chips">${chips}${fChips}${more}</div>
+    </div>`;
+  }
+  document.getElementById("cal-grid").innerHTML=html;
+}
+
+function prevMonth(){ if(S.month===0){S.year--;S.month=11;}else S.month--; renderCal(); }
+function nextMonth(){ if(S.month===11){S.year++;S.month=0;}else S.month++; renderCal(); }
+
+// ── RENDER UPCOMING ──
+function renderUpcoming(){
+  const evs=S.events
+    .filter(e=>!e.is_free&&(S.filter==="all"||e.owner===S.filter))
+    .sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))
+    .slice(0,6);
+  const el=document.getElementById("upcoming-list");
+  if(!evs.length){ el.innerHTML=`<div style="color:#2a2a38;font-size:12px;text-align:center;padding:18px">予定がありません</div>`; return; }
+  el.innerHTML=evs.map(ev=>`
+    <div class="ev-row" style="border-left:3px solid ${U[ev.owner]?.color};border-color:${U[ev.owner]?.color}22" onclick="openEvEdit('${ev.id}')">
+      <div style="flex:1;min-width:0">
+        <div class="ev-row-title">
+          <span>${san(ev.title)}</span>
+          ${ev.owner==="both"&&ev.kept===null?`<span class="promise-badge" onclick="event.stopPropagation();openPM('${ev.id}')">約束チェック</span>`:""}
+          ${ev.owner==="both"&&ev.kept===true?"✅":""}
+          ${ev.owner==="both"&&ev.kept===false?"❌":""}
+        </div>
+        <div class="ev-row-sub">
+          ${ev.date.slice(5).replace("-","/")} ${ev.time}〜${ev.time_end}
+          · <span style="color:${U[ev.owner]?.color}">${U[ev.owner]?.icon} ${U[ev.owner]?.label}</span>
+          ${ev.location?` · 📍${san(ev.location)}`:""}
+        </div>
+      </div>
+      <div class="ev-arrow">›</div>
+    </div>`).join("");
+}
+
+// ── RENDER FREE ──
+function renderFree(){
+  const el=document.getElementById("free-list");
+  let html="";
+  ["me","partner"].forEach(owner=>{
+    const slots=S.events.filter(e=>e.is_free&&e.owner===owner).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+    html+=`<div class="owner-section">
+      <div class="owner-label" style="color:${U[owner].color}">${U[owner].icon} ${U[owner].label}の空き <span style="font-size:10px;color:#333">(${slots.length}件)</span></div>
+      ${slots.length===0?`<div style="color:#2a2a38;font-size:11px">登録なし</div>`:slots.map(ev=>`
+        <div class="free-row" onclick="openEvEdit('${ev.id}')">
+          <div>
+            <div class="free-row-date">${ev.date.slice(5).replace("-","/")}（${DAYS[new Date(ev.date).getDay()]}）</div>
+            <div class="free-row-time">${ev.time} 〜 ${ev.time_end}</div>
+          </div>
+          <div class="ev-arrow">›</div>
+        </div>`).join("")}
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+
+// ── RENDER PROMISE ──
+function renderPromise(){
+  const bothEvs=S.events.filter(e=>e.owner==="both"&&!e.is_free);
+  const kept=bothEvs.filter(e=>e.kept===true).length;
+  const total=bothEvs.filter(e=>e.kept!==null).length;
+  document.getElementById("score-num").innerHTML=`${kept}<span class="score-total">/${total}</span>`;
+  const pct=document.getElementById("score-pct");
+  if(total>0){
+    const r=Math.round(kept/total*100);
+    const col=r>=80?"#4ade80":r>=50?"#c9a84c":"#ff7788";
+    pct.innerHTML=`<span style="font-size:12px;color:${col}">${r}% 達成</span>`;
+  }else pct.innerHTML="";
+
+  const pl=document.getElementById("promise-list");
+  if(!bothEvs.length){pl.innerHTML=`<div style="color:#2a2a38;font-size:12px;text-align:center;padding:18px">ふたり予定がありません</div>`;return;}
+  pl.innerHTML=bothEvs.sort((a,b)=>b.date.localeCompare(a.date)).map(ev=>`
+    <div class="promise-row" style="border-left:3px solid ${ev.kept===true?"#4ade80":ev.kept===false?"#ff7788":U.both.color};border:1px solid ${U.both.color}22">
+      <div style="flex:1;min-width:0">
+        <div class="promise-title">${san(ev.title)}</div>
+        <div class="promise-sub">${ev.date.slice(5).replace("-","/")} ${ev.time}〜${ev.time_end}${ev.location?` · 📍${san(ev.location)}`:""}</div>
+        ${ev.kept===false&&ev.broke_by?`<div class="promise-broke-label">${U[ev.broke_by]?.icon} ${U[ev.broke_by]?.label}が破った</div>`:""}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0">
+        ${ev.kept===null
+          ?`<button class="check-btn" onclick="openPM('${ev.id}')">チェック</button>`
+          :`<span style="font-size:18px">${ev.kept?"✅":"❌"}</span>
+            <button class="reset-btn" onclick="resetPromise('${ev.id}')">リセット</button>`}
+      </div>
+    </div>`).join("");
+
+  const ps=document.getElementById("penalty-section");
+  if(!S.penalties.length){ps.style.display="none";return;}
+  ps.style.display="";
+  document.getElementById("penalty-list").innerHTML=S.penalties.map(p=>`
+    <div class="penalty-row" style="background:${p.done?"#111118":"#1e1218"};border:1px solid ${p.done?"#2a2a38":"#ff445533"};border-left:3px solid ${p.done?"#2a2a38":"#ff7788"};opacity:${p.done?0.5:1}">
+      <div style="flex:1;min-width:0">
+        <div class="penalty-who">${U[p.broke_by]?.icon||""} ${U[p.broke_by]?.label||p.broke_by}の罰ゲーム</div>
+        <div class="penalty-text" style="color:${p.done?"#444":"#f0ede8"};text-decoration:${p.done?"line-through":"none"}">${san(p.text)}</div>
+        <div class="penalty-ev">「${san(p.ev_title)}」${p.ev_date?.slice(5).replace("-","/")}</div>
+      </div>
+      <button class="penalty-done-btn" style="background:${p.done?"#2a2a38":"#2a1218"};border:1px solid ${p.done?"#3a3a48":"#ff445544"};color:${p.done?"#666":"#ff7788"}" onclick="togglePenalty('${p.id}',${!!p.done})">${p.done?"元に戻す":"完了"}</button>
+    </div>`).join("");
+}
+
+// ── RENDER ANNIV ──
+function renderAnniv(){
+  const today=new Date();
+  const upcoming=S.anniversaries.map(a=>{
+    const o=new Date(a.date);
+    let nd;
+    if(a.repeat){
+      const ty=new Date(today.getFullYear(),o.getMonth(),o.getDate());
+      const ny=new Date(today.getFullYear()+1,o.getMonth(),o.getDate());
+      nd=(ty>=today?ty:ny).toISOString().slice(0,10);
+    }else nd=a.date;
+    return{...a,nextDate:nd};
+  }).filter(a=>a.nextDate>=S.today).sort((a,b)=>a.nextDate.localeCompare(b.nextDate)).slice(0,5);
+
+  const upEl=document.getElementById("anniv-upcoming");
+  if(upcoming.length){
+    upEl.innerHTML=`<div style="font-size:10px;color:#555;margin-bottom:7px">もうすぐの記念日</div>`+
+    upcoming.map(a=>{
+      const yrs=new Date(a.nextDate).getFullYear()-new Date(a.date).getFullYear();
+      return`<div class="anniv-upcoming" onclick="openEditAnniv('${a.id}')">
+        <div>
+          <div class="anniv-title">${san(a.title)}</div>
+          <div class="anniv-date-sub">${a.nextDate.slice(5).replace("-","/")} ${a.repeat&&yrs>0?"· "+yrs+"周年":""}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="anniv-emoji">🎂</div>
+          <div class="anniv-diff">${diffLabel(a.nextDate)}</div>
+        </div>
+      </div>`;
+    }).join("");
+  }else upEl.innerHTML="";
+
+  const allEl=document.getElementById("anniv-list");
+  if(!S.anniversaries.length){allEl.innerHTML=`<div style="color:#2a2a38;font-size:12px;text-align:center;padding:18px">記念日がありません</div>`;return;}
+  allEl.innerHTML=S.anniversaries.sort((a,b)=>a.date.localeCompare(b.date)).map(a=>`
+    <div class="anniv-row" onclick="openEditAnniv('${a.id}')">
+      <div>
+        <div style="font-size:13px;font-weight:500;margin-bottom:2px">${san(a.title)}</div>
+        <div style="font-size:10px;color:#555">${a.date.slice(5).replace("-","/")} ${a.repeat?"· 毎年":"· 一度のみ"}</div>
+      </div>
+      <div class="ev-arrow">›</div>
+    </div>`).join("");
+}
+
+// ── RENDER PHOTOS ──
+function renderPhotos(){
+  const grouped={};
+  S.photos.forEach(p=>{ if(!grouped[p.date])grouped[p.date]=[]; grouped[p.date].push(p); });
+  const el=document.getElementById("photo-list");
+  if(!Object.keys(grouped).length){
+    el.innerHTML=`<div style="text-align:center;padding:28px;color:#2a2a38"><div style="font-size:32px;margin-bottom:8px">🌙</div><div style="font-size:12px">まだ写真がありません</div></div>`;
+    return;
+  }
+  el.innerHTML=Object.entries(grouped).sort(([a],[b])=>b.localeCompare(a)).map(([date,imgs])=>`
+    <div class="photo-group">
+      <div class="photo-group-header">
+        <span class="photo-group-date">${date.slice(5).replace("-","/")}（${DAYS[new Date(date).getDay()]}）</span>
+        <span class="photo-group-count">${imgs.length}枚</span>
+        <label class="photo-add-btn">＋追加<input type="file" accept="image/*" multiple style="display:none" onchange="addPhotos('${date}',this.files);this.value=''"></label>
+      </div>
+      <div class="photo-grid">
+        ${imgs.map((img,idx)=>`<div class="photo-thumb" onclick="openLb('${date}',${idx})"><img src="${img.data_url}" loading="lazy"></div>`).join("")}
+      </div>
+    </div>`).join("");
+}
+
+// ── PHOTOS ──
+async function addPhotos(date,files){
+  for(const f of Array.from(files)){
+    const r=new FileReader();
+    r.onload=async e=>{ await sb.from("photos").insert({pair_id:S.pairId,date,data_url:e.target.result}); };
+    r.readAsDataURL(f);
+  }
+  toast("📷 写真を追加しました");
+  setTimeout(async()=>{ await loadAll(); renderPhotos(); },1500);
+}
+
+function openLb(date,idx){
+  S.lbDate=date; S.lbIdx=idx;
+  renderLb();
+  document.getElementById("lightbox").classList.add("open");
+}
+function closeLb(){ document.getElementById("lightbox").classList.remove("open"); }
+function renderLb(){
+  const grouped={};
+  S.photos.forEach(p=>{ if(!grouped[p.date])grouped[p.date]=[]; grouped[p.date].push(p); });
+  const imgs=grouped[S.lbDate]||[];
+  if(!imgs.length){closeLb();return;}
+  const img=imgs[S.lbIdx];
+  document.getElementById("lb-img").src=img.data_url;
+  document.getElementById("lb-info").textContent=`${S.lbIdx+1}/${imgs.length}枚`;
+  document.getElementById("lb-prev").style.display=S.lbIdx>0?"":"none";
+  document.getElementById("lb-next").style.display=S.lbIdx<imgs.length-1?"":"none";
+}
+function lbNav(dir){ S.lbIdx+=dir; renderLb(); }
+async function deleteLbPhoto(){
+  const grouped={};
+  S.photos.forEach(p=>{ if(!grouped[p.date])grouped[p.date]=[]; grouped[p.date].push(p); });
+  const imgs=grouped[S.lbDate]||[];
+  const img=imgs[S.lbIdx];
+  await sb.from("photos").delete().eq("id",img.id);
+  closeLb();
+  toast("🗑️ 写真を削除しました");
+}
+
+// ── EVENT MODAL ──
+let evFree=false;
+
+function openEv(date,isFree){
+  S.editEvId=null; S.currentDate=date; evFree=!!isFree;
+  document.getElementById("ev-modal-date").textContent=date.slice(5).replace("-","/");
+  document.getElementById("ev-title").value="";
+  document.getElementById("ev-time").value="12:00";
+  document.getElementById("ev-time-end").value="14:00";
+  document.getElementById("ev-reminder").value=isFree?"0":"30";
+  document.getElementById("ev-loc").value="";
+  document.getElementById("ev-note").value="";
+  document.getElementById("ev-del").style.display="none";
+  buildOwnerRow(isFree,S.myRole);
+  applyEvFreeToggle(isFree);
+  openModal("ev-modal");
+}
+
+function openEvEdit(id){
+  const ev=S.events.find(e=>e.id===id); if(!ev)return;
+  S.editEvId=id; S.currentDate=ev.date; evFree=ev.is_free||false;
+  document.getElementById("ev-modal-date").textContent=ev.date.slice(5).replace("-","/");
+  document.getElementById("ev-title").value=ev.title;
+  document.getElementById("ev-time").value=ev.time||"12:00";
+  document.getElementById("ev-time-end").value=ev.time_end||"14:00";
+  document.getElementById("ev-reminder").value=ev.reminder||0;
+  document.getElementById("ev-loc").value=ev.location||"";
+  document.getElementById("ev-note").value=ev.note||"";
+  document.getElementById("ev-del").style.display="";
+  buildOwnerRow(evFree,ev.owner);
+  applyEvFreeToggle(evFree);
+  openModal("ev-modal");
+}
+
+function setEvFree(isFree){
+  evFree=isFree;
+  buildOwnerRow(isFree, document.querySelector("#ev-owner-row .owner-btn[data-sel='1']")?.dataset.owner||S.myRole);
+  applyEvFreeToggle(isFree);
+}
+
+function applyEvFreeToggle(isFree){
+  const show=(id,v)=>{ const el=document.getElementById(id); if(el)el.style.display=v?"":"none"; };
+  show("fi-title-wrap",!isFree);
+  show("fi-reminder-wrap",!isFree);
+  show("fi-loc-wrap",!isFree);
+  show("fi-note-wrap",!isFree);
+  const togEv=document.getElementById("tog-ev");
+  const togFr=document.getElementById("tog-free");
+  togEv.style.background=isFree?"transparent":"#2a1e0a";
+  togEv.style.borderColor=isFree?"#2a2a38":"#c9a84c";
+  togEv.style.color=isFree?"#444":"#c9a84c";
+  togFr.style.background=isFree?"#1a3a2a":"transparent";
+  togFr.style.borderColor=isFree?"#4ade80":"#2a2a38";
+  togFr.style.color=isFree?"#4ade80":"#444";
+  const saveBtn=document.getElementById("ev-save");
+  saveBtn.className=`save-btn ${isFree?"save-green":"save-gold"}`;
+  const mt=document.getElementById("ev-modal-title");
+  if(isFree){mt.textContent="🟢 空き時間";mt.style.color="#4ade80";}
+  else if(S.editEvId){mt.textContent="予定を編集";mt.style.color="#c9a84c";}
+  else{mt.textContent="予定を追加";mt.style.color="#c9a84c";}
+}
+
+function buildOwnerRow(isFree,selected){
+  const owners=isFree?["me","partner"]:["me","partner","both"];
+  const row=document.getElementById("ev-owner-row");
+  row.innerHTML=owners.map(k=>{
+    const sel=selected===k;
+    return `<button class="owner-btn" data-owner="${k}" data-sel="${sel?1:0}"
+      style="border-color:${sel?U[k].color:"#2a2a38"};background:${sel?U[k].bg:"transparent"};color:${sel?U[k].color:"#444"}"
+      onclick="selectOwner('${k}',${isFree})">
+      ${U[k].icon} ${U[k].label}
+    </button>`;
+  }).join("");
+}
+
+function selectOwner(owner,isFree){
+  document.querySelectorAll("#ev-owner-row .owner-btn").forEach(b=>{
+    const k=b.dataset.owner; const sel=k===owner;
+    b.dataset.sel=sel?"1":"0";
+    b.style.borderColor=sel?U[k].color:"#2a2a38";
+    b.style.background=sel?U[k].bg:"transparent";
+    b.style.color=sel?U[k].color:"#444";
+  });
+}
+
+function getOwner(){ return document.querySelector("#ev-owner-row .owner-btn[data-sel='1']")?.dataset.owner||S.myRole; }
+
+async function saveEv(){
+  const isFree=evFree;
+  const title=document.getElementById("ev-title").value.trim();
+  if(!isFree&&!title)return;
+  const owner=getOwner();
+  const payload={
+    pair_id:S.pairId,
+    title:isFree?"空き":title,
+    date:S.currentDate,
+    time:document.getElementById("ev-time").value,
+    time_end:document.getElementById("ev-time-end").value,
+    owner,
+    reminder:isFree?0:Number(document.getElementById("ev-reminder").value),
+    location:isFree?"":document.getElementById("ev-loc").value,
+    note:isFree?"":document.getElementById("ev-note").value,
+    is_free:isFree,
+    ...(owner==="both"&&!isFree&&!S.editEvId?{kept:null,broke_by:null}:{}),
+  };
+
+  // Clash detection
+  if(!isFree&&!S.editEvId){
+    const other=owner==="me"?"partner":owner==="partner"?"me":null;
+    if(other){
+      const clashes=S.events.filter(e=>!e.is_free&&e.date===S.currentDate&&e.owner===other&&toMin(payload.time)<toMin(e.time_end)&&toMin(payload.time_end)>toMin(e.time));
+      if(clashes.length){
+        S.pendingPayload=payload;
+        document.getElementById("clash-list").innerHTML=clashes.map(ev=>`
+          <div style="background:#1e1218;border:1px solid #ff445533;border-left:3px solid #ff7788;border-radius:9px;padding:9px 12px;margin-bottom:7px">
+            <div style="font-size:12px;font-weight:600;color:#ff7788;margin-bottom:2px">${U[ev.owner]?.icon} ${san(ev.title)}</div>
+            <div style="font-size:10px;color:#666">${ev.time} 〜 ${ev.time_end}</div>
+          </div>`).join("");
+        closeModal("ev-modal");
+        openModal("clash-modal");
+        return;
+      }
+    }
+  }
+
+  if(S.editEvId){
+    await sb.from("events").update(payload).eq("id",S.editEvId);
+    toast("✏️ 更新しました");
+  }else{
+    await sb.from("events").insert(payload);
+    toast(isFree?"🟢 空き時間を登録しました":"✅ 予定を追加しました");
+  }
+  await loadAll(); renderAll();
+  closeModal("ev-modal");
+}
+
+async function forceAdd(){
+  if(!S.pendingPayload)return;
+  await sb.from("events").insert(S.pendingPayload);
+  S.pendingPayload=null;
+  await loadAll(); renderAll();
+  toast("✅ 追加しました");
+  closeModal("clash-modal");
+}
+
+async function deleteEv(){
+  if(!S.editEvId)return;
+  await sb.from("events").delete().eq("id",S.editEvId);
+  await loadAll(); renderAll();
+  closeModal("ev-modal");
+  toast("🗑️ 削除しました");
+}
+
+// ── PROMISE ──
+function openPM(id){
+  const ev=S.events.find(e=>e.id===id); if(!ev)return;
+  S.pmEvId=id; S.brokeBy=null;
+  document.getElementById("pm-title").textContent=`「${ev.title}」`;
+  document.getElementById("pm-sub").textContent=`${ev.date.slice(5).replace("-","/")} ${ev.time}〜${ev.time_end}`;
+  document.getElementById("broke-form").style.display="none";
+  document.getElementById("penalty-input").value="";
+  document.getElementById("broke-btn").style.background="transparent";
+  document.getElementById("broke-owner-row").innerHTML=["me","partner"].map(k=>`
+    <button data-owner="${k}" style="flex:1;padding:10px;border-radius:9px;border:2px solid #2a2a38;background:transparent;color:#444;font-size:13px;font-weight:600" onclick="selectBroke('${k}')">
+      ${U[k].icon} ${U[k].label}
+    </button>`).join("");
+  updatePenaltyBtn();
+  openModal("pm-modal");
+}
+
+function showBrokeForm(){
+  document.getElementById("broke-form").style.display="flex";
+  document.getElementById("broke-btn").style.background="linear-gradient(135deg,#3a1218,#5a1a22)";
+}
+
+function selectBroke(owner){
+  S.brokeBy=owner;
+  document.querySelectorAll("#broke-owner-row button").forEach(b=>{
+    const k=b.dataset.owner; const sel=k===owner;
+    b.style.borderColor=sel?U[k].color:"#2a2a38";
+    b.style.background=sel?U[k].bg:"transparent";
+    b.style.color=sel?U[k].color:"#444";
+  });
+  updatePenaltyBtn();
+}
+
+function updatePenaltyBtn(){
+  const text=document.getElementById("penalty-input").value.trim();
+  const ok=S.brokeBy&&text;
+  const btn=document.getElementById("penalty-save");
+  btn.style.background=ok?"linear-gradient(135deg,#5a1a22,#ff4455)":"#2a2a38";
+  btn.style.color=ok?"#fff":"#444";
+}
+document.getElementById("penalty-input").addEventListener("input",updatePenaltyBtn);
+
+async function savePromise(kept){
+  if(!kept&&(!S.brokeBy||!document.getElementById("penalty-input").value.trim()))return;
+  await sb.from("events").update({kept,broke_by:kept?null:S.brokeBy}).eq("id",S.pmEvId);
+  if(!kept){
+    const ev=S.events.find(e=>e.id===S.pmEvId);
+    await sb.from("penalties").insert({
+      pair_id:S.pairId, ev_title:ev?.title, ev_date:ev?.date,
+      broke_by:S.brokeBy, text:document.getElementById("penalty-input").value, done:false,
+    });
+  }
+  await loadAll(); renderAll();
+  toast(kept?"🎉 約束達成！":"😢 罰ゲーム追加");
+  closeModal("pm-modal");
+}
+
+async function resetPromise(id){
+  await sb.from("events").update({kept:null,broke_by:null}).eq("id",id);
+  await loadAll(); renderAll();
+  toast("↩️ リセットしました");
+}
+
+async function togglePenalty(id,done){
+  await sb.from("penalties").update({done:!done}).eq("id",id);
+  await loadAll(); renderAll();
+}
+
+// ── ANNIVERSARY ──
+let annivRepeat=true;
+
+function openNewAnniv(){
+  S.editAnnivId=null; annivRepeat=true;
+  document.getElementById("anniv-modal-title").textContent="記念日を追加";
+  document.getElementById("anniv-title").value="";
+  document.getElementById("anniv-date").value="";
+  document.getElementById("anniv-del").style.display="none";
+  buildRepeatRow(true);
+  openModal("anniv-modal");
+}
+
+function openEditAnniv(id){
+  const a=S.anniversaries.find(x=>x.id===id); if(!a)return;
+  S.editAnnivId=id; annivRepeat=a.repeat;
+  document.getElementById("anniv-modal-title").textContent="記念日を編集";
+  document.getElementById("anniv-title").value=a.title;
+  document.getElementById("anniv-date").value=a.date;
+  document.getElementById("anniv-del").style.display="";
+  buildRepeatRow(a.repeat);
+  openModal("anniv-modal");
+}
+
+function buildRepeatRow(repeat){
+  annivRepeat=repeat;
+  document.getElementById("anniv-repeat-row").innerHTML=[{v:true,l:"🔄 毎年"},{v:false,l:"一度のみ"}].map(opt=>`
+    <button class="repeat-btn" style="border-color:${repeat===opt.v?"#ff8c66":"#2a2a38"};background:${repeat===opt.v?"#2a1810":"transparent"};color:${repeat===opt.v?"#ff8c66":"#444"}"
+      onclick="buildRepeatRow(${opt.v})">${opt.l}</button>`).join("");
+}
+
+async function saveAnniv(){
+  const title=document.getElementById("anniv-title").value.trim();
+  const date=document.getElementById("anniv-date").value;
+  if(!title||!date)return;
+  if(S.editAnnivId){
+    await sb.from("anniversaries").update({title,date,repeat:annivRepeat}).eq("id",S.editAnnivId);
+    toast("✏️ 記念日を更新しました");
+  }else{
+    await sb.from("anniversaries").insert({pair_id:S.pairId,title,date,repeat:annivRepeat});
+    toast("🎂 記念日を追加しました");
+  }
+  await loadAll(); renderAll();
+  closeModal("anniv-modal");
+}
+
+async function deleteAnniv(){
+  if(!S.editAnnivId)return;
+  await sb.from("anniversaries").delete().eq("id",S.editAnnivId);
+  await loadAll(); renderAll();
+  closeModal("anniv-modal");
+  toast("🗑️ 削除しました");
+}
+
+// ── OVERLAY CLOSE ON BG TAP ──
+document.querySelectorAll(".overlay").forEach(el=>{
+  el.addEventListener("click",function(e){ if(e.target===this)this.classList.remove("open"); });
+});
+
+// ── BOOT ──
+(async()=>{
+  const {data:{session}}=await sb.auth.getSession();
+  if(session?.user){
+    await afterAuth(session.user);
+  }else{
+    document.getElementById("loading").style.display="none";
+    document.getElementById("auth").style.display="flex";
+  }
+  sb.auth.onAuthStateChange((_,session)=>{
+    if(!session){
+      document.getElementById("main").style.display="none";
+      document.getElementById("auth").style.display="flex";
+      showV("v-login");
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
