@@ -1040,7 +1040,7 @@ function openEv(date,isFree){
   document.getElementById("ev-loc").value="";
   document.getElementById("ev-note").value="";
   document.getElementById("ev-del").style.display="none";
-  buildOwnerRow(isFree,'role_me');
+  buildOwnerRow(isFree,S.myRole==='me'?'role_me':'role_partner');
   applyEvFreeToggle(isFree);
   openModal("ev-modal");
 }
@@ -1114,7 +1114,7 @@ function selectOwner(owner,isFree){
   });
 }
 
-function getOwner(){ return document.querySelector("#ev-owner-row .owner-btn[data-sel='1']")?.dataset.owner||'role_me'; }
+function getOwner(){ return document.querySelector("#ev-owner-row .owner-btn[data-sel='1']")?.dataset.owner||(S.myRole==='me'?'role_me':'role_partner'); }
 
 async function saveEv(){
   const isFree=evFree;
