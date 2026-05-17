@@ -501,7 +501,7 @@ input:focus,textarea:focus,select:focus{border-color:#c9a84c!important}
 
 <script>
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// ⚙️ 
+// ⚙️ ここを書き換えてください
 const SB_URL  = "https://webjuofpyzysirpbxoej.supabase.co";
 const SB_ANON = "sb_publishable_Ui-ZKz-HZrV1bRkxbz5OUg_ekOXJDFh";
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -671,6 +671,11 @@ function setupRT(){
     .subscribe();
 }
 
+function ownerDisp(owner){
+  if(owner==="role_me"||owner==="me") return U.me;
+  if(owner==="role_partner"||owner==="partner") return U.partner;
+  return U.both;
+}
 function renderAll(){
   renderCal();
   renderUpcoming();
@@ -779,7 +784,7 @@ function renderCal(){
   for(let i=0;i<dim;i++){
     const day=i+1;
     const ds=dstr(S.year,S.month,day);
-    const dayEvs=S.events.filter(e=>e.date===ds&&(S.filter==="all"||e.owner===S.filter));
+    const dayEvs=S.events.filter(e=>e.date===ds&&(S.filter==="all"||e.owner==="role_"+S.filter||e.owner===S.filter));
     const normEvs=dayEvs.filter(e=>!e.is_free);
     const freeEvs=dayEvs.filter(e=>e.is_free);
     const isToday=ds===S.today;
@@ -799,16 +804,16 @@ function renderCal(){
 
     // Icon for owner display
     const ownerIcons=(ev)=>{
-      if(ev.owner==="me") return U.me.icon;
-      if(ev.owner==="partner") return U.partner.icon;
-      return U.both.icon;
+      const d=ev.owner==="role_me"||ev.owner==="me"?"me":ev.owner==="role_partner"||ev.owner==="partner"?"partner":"both";
+      return U[d].icon;
     };
+    const ownerColor=(ev)=>{ const d=ev.owner==="role_me"||ev.owner==="me"?"me":ev.owner==="role_partner"||ev.owner==="partner"?"partner":"both"; return U[d]; };
 
     const chips=normEvs.slice(0,2).map(ev=>`
-      <div class="ev-chip" style="background:${U[ev.owner]?.bg};border-left:2px solid ${U[ev.owner]?.color};color:${U[ev.owner]?.color}" onclick="event.stopPropagation();openEvEdit('${ev.id}')">
+      <div class="ev-chip" style="background:${ownerColor(ev).bg};border-left:2px solid ${ownerColor(ev).color};color:${ownerColor(ev).color}" onclick="event.stopPropagation();openEvEdit('${ev.id}')">
         ${ownerIcons(ev)} ${san(ev.title)}
       </div>`).join("");
-    const fChips=freeEvs.length?`<div class="free-chip-row">${freeEvs.slice(0,2).map(ev=>`<div class="free-chip" onclick="event.stopPropagation();openEvEdit('${ev.id}')">${U[ev.owner]?.icon||""}空</div>`).join("")}</div>`:"";
+    const fChips=freeEvs.length?`<div class="free-chip-row">${freeEvs.slice(0,2).map(ev=>`<div class="free-chip" onclick="event.stopPropagation();openEvEdit('${ev.id}')">空</div>`).join("")}</div>`:"";
     const more=normEvs.length>2?`<div class="more-label">+${normEvs.length-2}</div>`:"";
     const badges=(hasPhoto?"📷":"")+(isAnniv?"🎂":"");
 
@@ -828,13 +833,13 @@ function nextMonth(){ if(S.month===11){S.year++;S.month=0;}else S.month++; rende
 // ── RENDER UPCOMING ──
 function renderUpcoming(){
   const evs=S.events
-    .filter(e=>!e.is_free&&(S.filter==="all"||e.owner===S.filter))
+    .filter(e=>!e.is_free&&(S.filter==="all"||e.owner==="role_"+S.filter||e.owner===S.filter))
     .sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))
     .slice(0,6);
   const el=document.getElementById("upcoming-list");
   if(!evs.length){ el.innerHTML=`<div style="color:#2a2a38;font-size:12px;text-align:center;padding:18px">予定がありません</div>`; return; }
   el.innerHTML=evs.map(ev=>`
-    <div class="ev-row" style="border-left:3px solid ${U[ev.owner]?.color};border-color:${U[ev.owner]?.color}22" onclick="openEvEdit('${ev.id}')">
+    <div class="ev-row" style="border-left:3px solid ${ownerDisp(ev.owner).color};border-color:${ownerDisp(ev.owner).color}22" onclick="openEvEdit('${ev.id}')">
       <div style="flex:1;min-width:0">
         <div class="ev-row-title">
           <span>${san(ev.title)}</span>
@@ -844,7 +849,7 @@ function renderUpcoming(){
         </div>
         <div class="ev-row-sub">
           ${ev.date.slice(5).replace("-","/")} ${ev.time}〜${ev.time_end}
-          · <span style="color:${U[ev.owner]?.color}">${U[ev.owner]?.icon} ${U[ev.owner]?.label}</span>
+          · <span style="color:${ownerDisp(ev.owner).color}">${ownerDisp(ev.owner).icon} ${ownerDisp(ev.owner).label}</span>
           ${ev.location?` · 📍${san(ev.location)}`:""}
         </div>
       </div>
@@ -857,7 +862,7 @@ function renderFree(){
   const el=document.getElementById("free-list");
   let html="";
   ["me","partner"].forEach(owner=>{
-    const slots=S.events.filter(e=>e.is_free&&e.owner===owner).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+    const slots=S.events.filter(e=>e.is_free&&(e.owner===owner||e.owner==="role_"+owner)).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
     html+=`<div class="owner-section">
       <div class="owner-label" style="color:${U[owner].color}">${U[owner].icon} ${U[owner].label}の空き <span style="font-size:10px;color:#333">(${slots.length}件)</span></div>
       ${slots.length===0?`<div style="color:#2a2a38;font-size:11px">登録なし</div>`:slots.map(ev=>`
@@ -875,7 +880,7 @@ function renderFree(){
 
 // ── RENDER PROMISE ──
 function renderPromise(){
-  const bothEvs=S.events.filter(e=>e.owner==="both"&&!e.is_free);
+  const bothEvs=S.events.filter(e=>(e.owner==="both")&&!e.is_free);
   const kept=bothEvs.filter(e=>e.kept===true).length;
   const total=bothEvs.filter(e=>e.kept!==null).length;
   document.getElementById("score-num").innerHTML=`${kept}<span class="score-total">/${total}</span>`;
@@ -889,11 +894,11 @@ function renderPromise(){
   const pl=document.getElementById("promise-list");
   if(!bothEvs.length){pl.innerHTML=`<div style="color:#2a2a38;font-size:12px;text-align:center;padding:18px">ふたり予定がありません</div>`;return;}
   pl.innerHTML=bothEvs.sort((a,b)=>b.date.localeCompare(a.date)).map(ev=>`
-    <div class="promise-row" style="border-left:3px solid ${ev.kept===true?"#4ade80":ev.kept===false?"#ff7788":U.both.color};border:1px solid ${U.both.color}22">
+    <div class="promise-row" style="border-left:3px solid ${ev.kept===true?"#4ade80":ev.kept===false?"#ff7788":U.both.color};border:1px solid ${U.both.color}22";>
       <div style="flex:1;min-width:0">
         <div class="promise-title">${san(ev.title)}</div>
         <div class="promise-sub">${ev.date.slice(5).replace("-","/")} ${ev.time}〜${ev.time_end}${ev.location?` · 📍${san(ev.location)}`:""}</div>
-        ${ev.kept===false&&ev.broke_by?`<div class="promise-broke-label">${U[ev.broke_by]?.icon} ${U[ev.broke_by]?.label}が破った</div>`:""}
+        ${ev.kept===false&&ev.broke_by?`<div class="promise-broke-label">${ownerDisp(ev.broke_by).icon} ${ownerDisp(ev.broke_by).label}が破った</div>`:""}
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0">
         ${ev.kept===null
@@ -909,7 +914,7 @@ function renderPromise(){
   document.getElementById("penalty-list").innerHTML=S.penalties.map(p=>`
     <div class="penalty-row" style="background:${p.done?"#111118":"#1e1218"};border:1px solid ${p.done?"#2a2a38":"#ff445533"};border-left:3px solid ${p.done?"#2a2a38":"#ff7788"};opacity:${p.done?0.5:1}">
       <div style="flex:1;min-width:0">
-        <div class="penalty-who">${U[p.broke_by]?.icon||""} ${U[p.broke_by]?.label||p.broke_by}の罰ゲーム</div>
+        <div class="penalty-who">${ownerDisp(p.broke_by).icon} ${ownerDisp(p.broke_by).label}の罰ゲーム</div>
         <div class="penalty-text" style="color:${p.done?"#444":"#f0ede8"};text-decoration:${p.done?"line-through":"none"}">${san(p.text)}</div>
         <div class="penalty-ev">「${san(p.ev_title)}」${p.ev_date?.slice(5).replace("-","/")}</div>
       </div>
@@ -1035,7 +1040,7 @@ function openEv(date,isFree){
   document.getElementById("ev-loc").value="";
   document.getElementById("ev-note").value="";
   document.getElementById("ev-del").style.display="none";
-  buildOwnerRow(isFree,S.myRole);
+  buildOwnerRow(isFree,'role_me');
   applyEvFreeToggle(isFree);
   openModal("ev-modal");
 }
@@ -1051,7 +1056,7 @@ function openEvEdit(id){
   document.getElementById("ev-loc").value=ev.location||"";
   document.getElementById("ev-note").value=ev.note||"";
   document.getElementById("ev-del").style.display="";
-  buildOwnerRow(evFree,ev.owner);
+  const _ov=ev.owner==='me'?'role_me':ev.owner==='partner'?'role_partner':ev.owner; buildOwnerRow(evFree,_ov);
   applyEvFreeToggle(evFree);
   openModal("ev-modal");
 }
@@ -1085,29 +1090,31 @@ function applyEvFreeToggle(isFree){
 }
 
 function buildOwnerRow(isFree,selected){
-  const owners=isFree?["me","partner"]:["me","partner","both"];
+  const owners=isFree?["role_me","role_partner"]:["role_me","role_partner","both"];
+  const dk=(k)=>k==="role_me"?"me":k==="role_partner"?"partner":"both";
   const row=document.getElementById("ev-owner-row");
   row.innerHTML=owners.map(k=>{
-    const sel=selected===k;
+    const d=dk(k); const sel=selected===k;
     return `<button class="owner-btn" data-owner="${k}" data-sel="${sel?1:0}"
-      style="border-color:${sel?U[k].color:"#2a2a38"};background:${sel?U[k].bg:"transparent"};color:${sel?U[k].color:"#444"}"
+      style="border-color:${sel?U[d].color:"#2a2a38"};background:${sel?U[d].bg:"transparent"};color:${sel?U[d].color:"#444"}"
       onclick="selectOwner('${k}',${isFree})">
-      ${U[k].icon} ${U[k].label}
+      ${U[d].icon} ${U[d].label}
     </button>`;
   }).join("");
 }
 
 function selectOwner(owner,isFree){
+  const dk=(k)=>k==="role_me"?"me":k==="role_partner"?"partner":"both";
   document.querySelectorAll("#ev-owner-row .owner-btn").forEach(b=>{
-    const k=b.dataset.owner; const sel=k===owner;
+    const k=b.dataset.owner; const sel=k===owner; const d=dk(k);
     b.dataset.sel=sel?"1":"0";
-    b.style.borderColor=sel?U[k].color:"#2a2a38";
-    b.style.background=sel?U[k].bg:"transparent";
-    b.style.color=sel?U[k].color:"#444";
+    b.style.borderColor=sel?U[d].color:"#2a2a38";
+    b.style.background=sel?U[d].bg:"transparent";
+    b.style.color=sel?U[d].color:"#444";
   });
 }
 
-function getOwner(){ return document.querySelector("#ev-owner-row .owner-btn[data-sel='1']")?.dataset.owner||S.myRole; }
+function getOwner(){ return document.querySelector("#ev-owner-row .owner-btn[data-sel='1']")?.dataset.owner||'role_me'; }
 
 async function saveEv(){
   const isFree=evFree;
